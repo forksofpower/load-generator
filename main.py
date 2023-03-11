@@ -29,19 +29,16 @@ def worker(shutdown_event: Event):
 def start():
     shutdown = Event()
 
-    def handle_worker_signal(signum, frame):
+    def handle_noop(signum, frame):
         return
-    def handle_sigterm(signum, frame):
+    def handle_shutdown(signum, frame):
         shutdown.set()
         sleep(frequency / 1000)
-    def handle_sigint(signum, frame):
-        # shutdown.set()
-        return
     
     # worker signals
-    signal.signal(signal.SIGTSTP, handle_worker_signal)
-    signal.signal(signal.SIGTERM, handle_worker_signal)
-    signal.signal(signal.SIGINT, handle_worker_signal)
+    signal.signal(signal.SIGTSTP, handle_noop)
+    signal.signal(signal.SIGTERM, handle_noop)
+    signal.signal(signal.SIGINT, handle_noop)
     
     # setup workers
     for i in range(threads):
@@ -49,9 +46,9 @@ def start():
         p.start()
 
     # main signals
-    signal.signal(signal.SIGTSTP, handle_sigterm)
-    signal.signal(signal.SIGTERM, handle_sigterm)
-    signal.signal(signal.SIGINT, handle_sigint)
+    signal.signal(signal.SIGTSTP, handle_shutdown)
+    signal.signal(signal.SIGTERM, handle_shutdown)
+    signal.signal(signal.SIGINT, handle_noop)
     
     
 if __name__ == '__main__':
